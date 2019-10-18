@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+    <title>Socket.IO chat</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+
+</head>
+<body>
+
+    <div id="app">
+        <div class="container" style="margin-top: 20px">
+
+            <div class="col-md-6 offset-md-3">
+
+
+                <div class="card">
+                    <div class="card-header  bg-info">
+                       Socket io Chat App
+                    </div>
+
+                    <div class="card-body">
+
+                        <ul class="list-group list-group-flush" v-for="message in allMsg">
+                            <li class="list-group-item" >
+                                <span :class="{'float-right':message.type ===1}">{{message.msg}}</span>
+                            </li>
+                        </ul>
+                        <small v-if="type">typing....</small>
+
+                        <form @submit.prevent="sendMsg">
+                            <div class="form-group">
+                                <input type="text" class="form-control" v-model="textMsg"  placeholder="Enter Message">
+                            </div>
+
+                            <!--<button type="submit" class="btn btn-primary">Submit</button>-->
+                        </form>
+
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.js"></script>
+
+    <script>
+        var socket = io();
+        var vue = new Vue({
+            el:"#app",
+
+            data:{
+                textMsg: null,
+                allMsg: [],
+                type: false
+            },
+
+            watch:{
+                textMsg(value){
+                    //console.log(value)
+                    (value) ? socket.emit('typing') : socket.emit('stopTyping');
+                }
+            },
+
+            methods:{
+                sendMsg(){
+                 this.allMsg.push({msg:this.textMsg, type:1});
+                 socket.emit('chat-msg', this.textMsg);
+                 this.textMsg = null;
+              }
+
+            },
+
+
+
+            created(){
+                socket.on('chat-msg', (param) => {
+                    this.allMsg.push({msg:param, type:2})
+                });
+
+                socket.on('typing', () => {
+                    this.type = true;
+                    console.log(this.typing)
+                });
+                socket.on('stopTyping', () => {
+                   this.type = false;
+                });
+            }
+
+
+        })
+
+    </script>
+</body>
+</html>
