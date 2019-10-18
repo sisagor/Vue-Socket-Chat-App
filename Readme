@@ -1,0 +1,4 @@
+ #to download all dependency
+ npm install
+#run server
+node index.js
